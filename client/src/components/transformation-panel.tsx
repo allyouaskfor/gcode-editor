@@ -1,20 +1,17 @@
 import { useState } from "react";
 import { Transformation } from "@shared/schema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
   Settings, 
-  MousePointer, 
-  Square, 
-  Circle, 
   Move,
   RotateCw,
-  Scale
+  Scale,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 
 interface TransformationPanelProps {
@@ -34,6 +31,8 @@ interface TransformationPanelProps {
   fileName?: string;
   fileSize?: number;
   totalLines?: number;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export function TransformationPanel({
@@ -46,6 +45,8 @@ export function TransformationPanel({
   fileName,
   fileSize,
   totalLines,
+  isCollapsed = false,
+  onToggleCollapse,
 }: TransformationPanelProps) {
   const [transformation, setTransformation] = useState<Transformation>({
     translateX: 0,
@@ -57,7 +58,7 @@ export function TransformationPanel({
   });
 
   const handleTransformationChange = (field: keyof Transformation, value: number) => {
-    setTransformation(prev => ({ ...prev, [field]: value }));
+    setTransformation((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleApply = () => {
@@ -87,230 +88,181 @@ export function TransformationPanel({
   };
 
   return (
-    <Card className="w-72 bg-white shadow-lg border border-gray-200">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center text-base">
-          <Settings className="h-4 w-4 text-primary mr-2" />
-          Transformation Tools
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {/* File Information */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">File Information</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Format:</span>
-              <Badge variant="secondary" className="font-mono text-xs">
-                {fileName ? fileName.split('.').pop()?.toUpperCase() || 'GCODE' : 'GCODE'}
-              </Badge>
-            </div>
-            {fileSize && (
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Size:</span>
-                <span className="font-mono">{formatFileSize(fileSize)}</span>
-              </div>
-            )}
-            {totalLines && (
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Total Lines:</span>
-                <span className="font-mono">{totalLines}</span>
-              </div>
-            )}
-          </div>
+    <div className="bg-white border-t border-gray-200 shadow-lg">
+      {/* Toolbar Header */}
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center space-x-2">
+          <Settings className="h-4 w-4 text-primary" />
+          <span className="font-medium text-sm">Transformation Tools</span>
+          {selectedCommandsCount > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {selectedCommandsCount} selected
+            </Badge>
+          )}
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleCollapse}
+          className="h-6 w-6 p-0"
+        >
+          {isCollapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </Button>
+      </div>
 
-        <Separator />
-
-        {/* Selection Information */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Selection</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">Selected Lines:</span>
-              <span className="font-medium">{selectedCommandsCount}</span>
-            </div>
-            {selectionBounds && (
-              <>
-                <div className="text-xs text-gray-600 mt-2">Bounds:</div>
-                <div className="font-mono text-xs space-y-1">
-                  <div>X: {selectionBounds.minX.toFixed(1)} - {selectionBounds.maxX.toFixed(1)} mm</div>
-                  <div>Y: {selectionBounds.minY.toFixed(1)} - {selectionBounds.maxY.toFixed(1)} mm</div>
-                  <div>Z: {selectionBounds.minZ.toFixed(1)} - {selectionBounds.maxZ.toFixed(1)} mm</div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Selection Tools */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Selection Tools</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" className="flex items-center justify-center">
-              <MousePointer className="h-3 w-3 mr-1" />
-              Select
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center justify-center">
-              <Square className="h-3 w-3 mr-1" />
-              Rectangle
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center justify-center">
-              <Circle className="h-3 w-3 mr-1" />
-              Circle
-            </Button>
-            <Button variant="outline" size="sm" className="flex items-center justify-center">
-              <Move className="h-3 w-3 mr-1" />
-              Polygon
-            </Button>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Transformation Controls */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
-            <Move className="h-3 w-3 mr-1" />
-            Transform
-          </h4>
-          <div className="space-y-4">
-            {/* Translation */}
-            <div className="space-y-2">
-              <Label className="text-xs text-gray-600">Translation (mm)</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="translateX" className="text-xs">X</Label>
-                  <Input
-                    id="translateX"
-                    type="number"
-                    step="0.01"
-                    value={transformation.translateX}
-                    onChange={(e) => handleTransformationChange('translateX', parseFloat(e.target.value) || 0)}
-                    className="h-8 text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="translateY" className="text-xs">Y</Label>
-                  <Input
-                    id="translateY"
-                    type="number"
-                    step="0.01"
-                    value={transformation.translateY}
-                    onChange={(e) => handleTransformationChange('translateY', parseFloat(e.target.value) || 0)}
-                    className="h-8 text-xs font-mono"
-                  />
-                </div>
-              </div>
+      {/* Collapsible Content */}
+      {!isCollapsed && (
+        <div className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* File & Selection Info */}
+            <div className="space-y-3">
               <div>
-                <Label htmlFor="translateZ" className="text-xs">Z</Label>
-                <Input
-                  id="translateZ"
-                  type="number"
-                  step="0.01"
-                  value={transformation.translateZ}
-                  onChange={(e) => handleTransformationChange('translateZ', parseFloat(e.target.value) || 0)}
-                  className="h-8 text-xs font-mono"
-                />
+                <h4 className="text-sm font-medium text-gray-700 mb-2">File Information</h4>
+                <div className="flex items-center space-x-4">
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    {fileName ? fileName.split('.').pop()?.toUpperCase() || 'GCODE' : 'GCODE'}
+                  </Badge>
+                  {fileSize && (
+                    <span className="text-xs text-gray-600">{formatFileSize(fileSize)}</span>
+                  )}
+                  {totalLines && (
+                    <span className="text-xs text-gray-600">{totalLines} lines</span>
+                  )}
+                </div>
+              </div>
+              
+              {selectionBounds && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Selection Bounds</h4>
+                  <div className="text-xs font-mono text-gray-600 space-y-1">
+                    <div>X: {selectionBounds.minX.toFixed(1)} - {selectionBounds.maxX.toFixed(1)} mm</div>
+                    <div>Y: {selectionBounds.minY.toFixed(1)} - {selectionBounds.maxY.toFixed(1)} mm</div>
+                    <div>Z: {selectionBounds.minZ.toFixed(1)} - {selectionBounds.maxZ.toFixed(1)} mm</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Transform Controls */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-gray-700 flex items-center">
+                <Move className="h-3 w-3 mr-1" />
+                Transform
+              </h4>
+              <div className="grid grid-cols-3 gap-3">
+                {/* Translation */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-gray-600">Translation (mm)</Label>
+                  <div className="space-y-1">
+                    <Input
+                      placeholder="X"
+                      type="number"
+                      step="0.01"
+                      value={transformation.translateX}
+                      onChange={(e) => handleTransformationChange('translateX', parseFloat(e.target.value) || 0)}
+                      className="h-7 text-xs font-mono"
+                    />
+                    <Input
+                      placeholder="Y"
+                      type="number"
+                      step="0.01"
+                      value={transformation.translateY}
+                      onChange={(e) => handleTransformationChange('translateY', parseFloat(e.target.value) || 0)}
+                      className="h-7 text-xs font-mono"
+                    />
+                    <Input
+                      placeholder="Z"
+                      type="number"
+                      step="0.01"
+                      value={transformation.translateZ}
+                      onChange={(e) => handleTransformationChange('translateZ', parseFloat(e.target.value) || 0)}
+                      className="h-7 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Rotation & Scale */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-gray-600 flex items-center">
+                    <RotateCw className="h-3 w-3 mr-1" />
+                    Rotation (°)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={transformation.rotation}
+                    onChange={(e) => handleTransformationChange('rotation', parseFloat(e.target.value) || 0)}
+                    className="h-7 text-xs font-mono"
+                  />
+                  <Label className="text-xs text-gray-600 flex items-center mt-2">
+                    <Scale className="h-3 w-3 mr-1" />
+                    Scale
+                  </Label>
+                  <div className="grid grid-cols-2 gap-1">
+                    <Input
+                      placeholder="X"
+                      type="number"
+                      step="0.01"
+                      value={transformation.scaleX}
+                      onChange={(e) => handleTransformationChange('scaleX', parseFloat(e.target.value) || 1)}
+                      className="h-7 text-xs font-mono"
+                    />
+                    <Input
+                      placeholder="Y"
+                      type="number"
+                      step="0.01"
+                      value={transformation.scaleY}
+                      onChange={(e) => handleTransformationChange('scaleY', parseFloat(e.target.value) || 1)}
+                      className="h-7 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2">
+                  <Label className="text-xs text-gray-600">Actions</Label>
+                  <div className="space-y-1">
+                    <Button 
+                      onClick={handleApply} 
+                      size="sm"
+                      className="w-full h-7 text-xs"
+                      disabled={selectedCommandsCount === 0}
+                    >
+                      Apply Transform
+                    </Button>
+                    <Button 
+                      onClick={handleReset} 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full h-7 text-xs"
+                    >
+                      Reset Values
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Rotation */}
-            <div>
-              <Label htmlFor="rotation" className="text-xs text-gray-600 flex items-center">
-                <RotateCw className="h-3 w-3 mr-1" />
-                Rotation (degrees)
-              </Label>
-              <Input
-                id="rotation"
-                type="number"
-                step="0.1"
-                value={transformation.rotation}
-                onChange={(e) => handleTransformationChange('rotation', parseFloat(e.target.value) || 0)}
-                className="h-8 text-xs font-mono"
-              />
-            </div>
-
-            {/* Scale */}
+            {/* Z-Height Filter */}
             <div className="space-y-2">
-              <Label className="text-xs text-gray-600 flex items-center">
-                <Scale className="h-3 w-3 mr-1" />
-                Scale
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="scaleX" className="text-xs">X</Label>
-                  <Input
-                    id="scaleX"
-                    type="number"
-                    step="0.01"
-                    value={transformation.scaleX}
-                    onChange={(e) => handleTransformationChange('scaleX', parseFloat(e.target.value) || 1)}
-                    className="h-8 text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="scaleY" className="text-xs">Y</Label>
-                  <Input
-                    id="scaleY"
-                    type="number"
-                    step="0.01"
-                    value={transformation.scaleY}
-                    onChange={(e) => handleTransformationChange('scaleY', parseFloat(e.target.value) || 1)}
-                    className="h-8 text-xs font-mono"
-                  />
-                </div>
+              <h4 className="text-sm font-medium text-gray-700">Z-Height Filter</h4>
+              <div className="flex flex-wrap gap-2">
+                {zHeights.map((z, index) => (
+                  <label key={z} className="flex items-center cursor-pointer bg-gray-50 rounded px-2 py-1">
+                    <Checkbox
+                      checked={visibleZHeights.has(z)}
+                      onCheckedChange={(checked) => onZHeightVisibilityChange(z, !!checked)}
+                      className="mr-2"
+                    />
+                    <div className={`w-3 h-3 rounded mr-2 ${getZHeightColor(index)}`} />
+                    <span className="text-xs">{z.toFixed(1)}mm</span>
+                  </label>
+                ))}
               </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex space-x-2 pt-2">
-              <Button 
-                onClick={handleApply} 
-                className="flex-1 h-8 text-xs"
-                disabled={selectedCommandsCount === 0}
-              >
-                Apply
-              </Button>
-              <Button 
-                onClick={handleReset} 
-                variant="outline" 
-                className="h-8 text-xs px-3"
-              >
-                Reset
-              </Button>
             </div>
           </div>
         </div>
-
-        <Separator />
-
-        {/* Z-Height Filter */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Z-Height Filter</h4>
-          <div className="space-y-2 max-h-32 overflow-y-auto">
-            {zHeights.map((z, index) => (
-              <div key={z} className="flex items-center justify-between">
-                <label className="flex items-center cursor-pointer">
-                  <Checkbox
-                    checked={visibleZHeights.has(z)}
-                    onCheckedChange={(checked) => onZHeightVisibilityChange(z, !!checked)}
-                    className="mr-2"
-                  />
-                  <div className={`w-3 h-3 rounded mr-2 ${getZHeightColor(index)}`} />
-                  <span className="text-sm">{z.toFixed(1)}mm</span>
-                </label>
-                <span className="text-xs text-gray-500">
-                  {/* This would show the count of lines at this Z height */}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

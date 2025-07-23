@@ -30,6 +30,7 @@ export default function GcodeEditor() {
   const [zHeights, setZHeights] = useState<number[]>([]);
   const [visibleZHeights, setVisibleZHeights] = useState<Set<number>>(new Set());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
 
   // File upload mutation
   const uploadMutation = useMutation({
@@ -272,42 +273,45 @@ export default function GcodeEditor() {
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Code Editor */}
-        <div className="w-1/2">
-          <CodeEditor
-            commands={commands}
-            selectedLines={selectedLines}
-            onLineSelect={handleLineSelect}
-            fileName={currentFile?.name}
-          />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Panel - Code Editor */}
+          <div className="w-1/2">
+            <CodeEditor
+              commands={commands}
+              selectedLines={selectedLines}
+              onLineSelect={handleLineSelect}
+              fileName={currentFile?.name}
+            />
+          </div>
+
+          {/* Right Panel - Visualization */}
+          <div className="w-1/2">
+            <VisualizationPanel
+              commands={commands}
+              selectedLines={selectedLines}
+              onSelectionChange={handleSelectionChange}
+              zHeights={zHeights}
+              visibleZHeights={visibleZHeights}
+            />
+          </div>
         </div>
 
-        {/* Right Panel - Visualization */}
-        <div className="w-1/2">
-          <VisualizationPanel
-            commands={commands}
-            selectedLines={selectedLines}
-            onSelectionChange={handleSelectionChange}
-            zHeights={zHeights}
-            visibleZHeights={visibleZHeights}
-          />
-        </div>
-
-        {/* Transformation Panel */}
-        <div className="absolute right-4 top-20 z-10">
-          <TransformationPanel
-            zHeights={zHeights}
-            visibleZHeights={visibleZHeights}
-            onZHeightVisibilityChange={handleZHeightVisibilityChange}
-            selectedCommandsCount={selectedLines.size}
-            selectionBounds={selectionBounds}
-            onApplyTransformation={handleApplyTransformation}
-            fileName={currentFile?.name}
-            fileSize={currentFile?.size}
-            totalLines={currentFile?.lineCount}
-          />
-        </div>
+        {/* Bottom Docked Transformation Toolbar */}
+        <TransformationPanel
+          zHeights={zHeights}
+          visibleZHeights={visibleZHeights}
+          onZHeightVisibilityChange={handleZHeightVisibilityChange}
+          selectedCommandsCount={selectedLines.size}
+          selectionBounds={selectionBounds}
+          onApplyTransformation={handleApplyTransformation}
+          fileName={currentFile?.name}
+          fileSize={currentFile?.size}
+          totalLines={currentFile?.lineCount}
+          isCollapsed={isToolbarCollapsed}
+          onToggleCollapse={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
+        />
       </div>
 
       {/* Bottom Status Bar */}
