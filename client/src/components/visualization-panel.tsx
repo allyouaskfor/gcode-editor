@@ -149,7 +149,12 @@ export function VisualizationPanel({
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
 
-    console.log('Mouse down:', { clientX: e.clientX, clientY: e.clientY, rectLeft: rect.left, rectTop: rect.top, screenX, screenY });
+    // Debug coordinate conversion
+    if (rendererRef.current) {
+      const worldPos = rendererRef.current.screenToWorld(screenX, screenY);
+      console.log('Coordinate conversion:', { screenX, screenY, worldX: worldPos.x, worldY: worldPos.y });
+      console.log('Renderer bounds:', rendererRef.current.getBounds());
+    }
 
     setIsSelecting(true);
     setSelectionStart({ x: screenX, y: screenY });

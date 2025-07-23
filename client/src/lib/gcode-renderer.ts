@@ -354,4 +354,8 @@ export class GcodeRenderer {
   getZHeightColors(): Map<number, string> {
     return new Map(this.settings.zHeightColors);
   }
+
+  getBounds(): { minX: number; maxX: number; minY: number; maxY: number } | null {
+    return this.bounds;
+  }
 }
