@@ -295,6 +295,7 @@ export default function GcodeEditor() {
               onSelectionChange={handleSelectionChange}
               zHeights={zHeights}
               visibleZHeights={visibleZHeights}
+              units={units}
             />
           </div>
         </div>

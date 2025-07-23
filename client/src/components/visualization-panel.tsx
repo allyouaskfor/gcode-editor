@@ -19,6 +19,7 @@ interface VisualizationPanelProps {
   onSelectionChange: (selectedIndices: number[]) => void;
   zHeights: number[];
   visibleZHeights: Set<number>;
+  units?: 'metric' | 'imperial';
 }
 
 export function VisualizationPanel({ 
@@ -26,7 +27,8 @@ export function VisualizationPanel({
   selectedLines, 
   onSelectionChange, 
   zHeights,
-  visibleZHeights 
+  visibleZHeights,
+  units = 'metric'
 }: VisualizationPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GcodeRenderer | null>(null);
@@ -35,6 +37,23 @@ export function VisualizationPanel({
   const [selectionStart, setSelectionStart] = useState<{ x: number; y: number } | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{ x: number; y: number } | null>(null);
   const [selectionTool, setSelectionTool] = useState<'pointer' | 'rectangle' | 'circle' | 'polygon'>('rectangle');
+
+  // Unit conversion utilities
+  const convertUnits = (value: number, from: 'metric' | 'imperial', to: 'metric' | 'imperial'): number => {
+    if (from === to) return value;
+    if (from === 'metric' && to === 'imperial') return value / 25.4; // mm to inches
+    if (from === 'imperial' && to === 'metric') return value * 25.4; // inches to mm
+    return value;
+  };
+
+  const formatCoordinate = (value: number): string => {
+    const converted = convertUnits(value, 'metric', units);
+    return converted.toFixed(units === 'metric' ? 1 : 3);
+  };
+
+  const getUnitsLabel = (): string => {
+    return units === 'metric' ? 'mm' : 'in';
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -264,10 +283,10 @@ export function VisualizationPanel({
         <Card className="absolute top-4 left-4 p-3">
           <div className="text-sm font-mono space-y-1">
             <div>
-              X: <span className="text-primary font-medium">{mousePos.x.toFixed(1)}</span> mm
+              X: <span className="text-primary font-medium">{formatCoordinate(mousePos.x)}</span> {getUnitsLabel()}
             </div>
             <div>
-              Y: <span className="text-primary font-medium">{mousePos.y.toFixed(1)}</span> mm
+              Y: <span className="text-primary font-medium">{formatCoordinate(mousePos.y)}</span> {getUnitsLabel()}
             </div>
           </div>
         </Card>
