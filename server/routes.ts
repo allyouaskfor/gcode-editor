@@ -1,13 +1,17 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
 import { insertGcodeFileSchema } from "@shared/schema";
 
+interface MulterRequest extends Request {
+  file?: Express.Multer.File;
+}
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     // Accept G-Code files
     const allowedExtensions = ['.gcode', '.nc', '.txt'];
     const hasValidExtension = allowedExtensions.some(ext => 
@@ -52,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload G-Code file
-  app.post("/api/gcode-files", upload.single('file'), async (req, res) => {
+  app.post("/api/gcode-files", upload.single('file'), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
