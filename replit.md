@@ -27,10 +27,11 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Hot reload with Vite middleware integration
 
 ### Data Storage
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: PostgreSQL with Drizzle ORM (Active)
 - **Schema Management**: Drizzle Kit for migrations
 - **Connection**: Neon Database serverless PostgreSQL
-- **Development Storage**: In-memory storage class for development/testing
+- **Production Storage**: DatabaseStorage class using PostgreSQL
+- **Development Storage**: MemStorage class for testing (available but not active)
 
 ## Key Components
 
@@ -95,5 +96,15 @@ Preferred communication style: Simple, everyday language.
 - **Migrations**: Drizzle Kit handles schema changes
 - **Push Command**: `npm run db:push` applies schema to database
 - **Connection**: Serverless PostgreSQL via @neondatabase/serverless
+
+## Recent Changes
+
+### January 23, 2025
+- **Database Integration**: Added PostgreSQL database support
+  - Created `server/db.ts` with Neon Database connection
+  - Updated `server/storage.ts` to use DatabaseStorage instead of MemStorage
+  - Applied database schema using `npm run db:push`
+  - All G-Code files now persist in PostgreSQL database
+  - Maintained backward compatibility with IStorage interface
 
 The application follows a modern full-stack architecture with clear separation between client and server code, while maintaining flexibility for both development and production deployment scenarios.

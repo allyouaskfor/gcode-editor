@@ -1,4 +1,6 @@
 import { gcodeFiles, type GcodeFile, type InsertGcodeFile } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getGcodeFile(id: number): Promise<GcodeFile | undefined>;
@@ -46,4 +48,40 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// DatabaseStorage implementation
+export class DatabaseStorage implements IStorage {
+  async getGcodeFile(id: number): Promise<GcodeFile | undefined> {
+    const [file] = await db.select().from(gcodeFiles).where(eq(gcodeFiles.id, id));
+    return file || undefined;
+  }
+
+  async getGcodeFiles(): Promise<GcodeFile[]> {
+    return await db.select().from(gcodeFiles);
+  }
+
+  async createGcodeFile(insertFile: InsertGcodeFile): Promise<GcodeFile> {
+    const [file] = await db
+      .insert(gcodeFiles)
+      .values(insertFile)
+      .returning();
+    return file;
+  }
+
+  async updateGcodeFile(id: number, updateData: Partial<InsertGcodeFile>): Promise<GcodeFile | undefined> {
+    const [file] = await db
+      .update(gcodeFiles)
+      .set(updateData)
+      .where(eq(gcodeFiles.id, id))
+      .returning();
+    return file || undefined;
+  }
+
+  async deleteGcodeFile(id: number): Promise<boolean> {
+    const result = await db
+      .delete(gcodeFiles)
+      .where(eq(gcodeFiles.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+}
+
+export const storage = new DatabaseStorage();
