@@ -16,7 +16,8 @@ import {
   Save, 
   Download,
   Box,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from "lucide-react";
 
 export default function GcodeEditor() {
@@ -191,6 +192,25 @@ export default function GcodeEditor() {
     });
   }, [currentFile, commands, toast]);
 
+  const handleLoadSample = useCallback(async () => {
+    try {
+      const response = await fetch('/sample.gcode');
+      if (!response.ok) {
+        throw new Error('Failed to fetch sample file');
+      }
+      
+      const content = await response.text();
+      const file = new File([content], 'sample.gcode', { type: 'text/plain' });
+      uploadMutation.mutate(file);
+    } catch (error) {
+      toast({
+        title: "Failed to load sample",
+        description: "Could not load the sample G-Code file",
+        variant: "destructive",
+      });
+    }
+  }, [uploadMutation, toast]);
+
   const selectionBounds = selectedLines.size > 0 
     ? TransformationUtils.calculateSelectionBounds(commands, Array.from(selectedLines))
     : null;
@@ -219,6 +239,15 @@ export default function GcodeEditor() {
               >
                 <FolderOpen className="mr-2 h-4 w-4" />
                 {uploadMutation.isPending ? 'Loading...' : 'Load G-Code'}
+              </Button>
+              <Button 
+                onClick={handleLoadSample}
+                disabled={uploadMutation.isPending}
+                variant="secondary"
+                className="flex items-center"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Load Sample
               </Button>
               <Button 
                 onClick={handleSave}
