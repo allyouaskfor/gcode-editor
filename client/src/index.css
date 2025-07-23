@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* G-Code Editor specific colors */
+  --gcode-background: hsl(210, 11%, 15%);
+  --gcode-foreground: hsl(0, 0%, 100%);
+  --gcode-comment: hsl(120, 100%, 75%);
+  --gcode-command: hsl(200, 100%, 75%);
+  --gcode-parameter: hsl(60, 100%, 75%);
+  --gcode-selected: hsl(14, 100%, 57%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Custom scrollbar styles */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Canvas styles */
+  canvas {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+}
+
+@layer components {
+  /* G-Code syntax highlighting */
+  .gcode-line {
+    @apply font-mono text-sm leading-5 px-1 cursor-pointer;
+  }
+
+  .gcode-line:hover {
+    @apply bg-gray-800;
+  }
+
+  .gcode-line.selected {
+    @apply bg-orange-500 bg-opacity-20;
+  }
+
+  .gcode-comment {
+    @apply text-green-400;
+  }
+
+  .gcode-command {
+    @apply text-blue-300 font-medium;
+  }
+
+  .gcode-parameter {
+    @apply text-yellow-300;
+  }
+
+  /* Selection styles */
+  .selection-rectangle {
+    fill: hsla(14, 100%, 57%, 0.1);
+    stroke: hsl(14, 100%, 57%);
+    stroke-width: 2;
+    stroke-dasharray: 5,5;
+  }
+
+  /* Z-height color classes */
+  .z-height-0 { @apply text-blue-500; }
+  .z-height-1 { @apply text-green-500; }
+  .z-height-2 { @apply text-purple-500; }
+  .z-height-3 { @apply text-amber-500; }
+  .z-height-4 { @apply text-red-500; }
+  .z-height-5 { @apply text-cyan-500; }
+}
+
+@layer utilities {
+  /* File drag and drop styles */
+  .drag-over {
+    @apply border-2 border-dashed border-primary bg-primary bg-opacity-5;
+  }
+
+  /* Responsive utilities */
+  .editor-split {
+    @apply flex flex-col lg:flex-row;
+  }
+
+  .editor-panel {
+    @apply w-full lg:w-1/2;
+  }
+}
