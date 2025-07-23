@@ -68,6 +68,8 @@ export class GcodeRenderer {
       return;
     }
 
+
+
     this.calculateBounds(commands);
     this.calculateTransform();
 
@@ -239,32 +241,47 @@ export class GcodeRenderer {
 
   private renderToolpath(commands: GcodeCommand[]) {
     let currentPos = { x: 0, y: 0, z: 0 };
+    let hasMovements = false;
     
     commands.forEach((cmd, index) => {
+      // Store previous position before updating
+      const prevPos = { ...currentPos };
+      
+      // Update current position
       if (cmd.x !== undefined) currentPos.x = cmd.x;
       if (cmd.y !== undefined) currentPos.y = cmd.y;
       if (cmd.z !== undefined) currentPos.z = cmd.z;
 
-      if (cmd.command.startsWith('G1') || cmd.command.startsWith('G01')) {
-        this.renderMove(cmd, currentPos, index);
+      // Check for movement commands (including G0)
+      if (cmd.command.startsWith('G0') || cmd.command.startsWith('G00') ||
+          cmd.command.startsWith('G1') || cmd.command.startsWith('G01')) {
+        if (cmd.x !== undefined || cmd.y !== undefined) {
+          this.renderMove(cmd, prevPos, index);
+          hasMovements = true;
+        }
       } else if (cmd.command.startsWith('G2') || cmd.command.startsWith('G3')) {
-        this.renderArc(cmd, currentPos, index);
+        this.renderArc(cmd, prevPos, index);
+        hasMovements = true;
       }
     });
+
+
   }
 
-  private renderMove(cmd: GcodeCommand, pos: { x: number; y: number; z: number }, index: number) {
-    if (cmd.x === undefined || cmd.y === undefined) return;
+  private renderMove(cmd: GcodeCommand, prevPos: { x: number; y: number; z: number }, index: number) {
+    // Get the target position, using previous coordinates if not specified
+    const targetX = cmd.x !== undefined ? cmd.x : prevPos.x;
+    const targetY = cmd.y !== undefined ? cmd.y : prevPos.y;
 
     const isSelected = this.settings.selectedCommands.has(index);
-    const color = this.getZHeightColor(pos.z);
+    const color = this.getZHeightColor(prevPos.z);
     
     this.ctx.strokeStyle = isSelected ? 'hsl(14, 100%, 57%)' : color;
     this.ctx.lineWidth = isSelected ? 3 : 2;
     this.ctx.globalAlpha = isSelected ? 1 : 0.8;
 
-    const start = this.worldToScreen(pos.x, pos.y);
-    const end = this.worldToScreen(cmd.x, cmd.y);
+    const start = this.worldToScreen(prevPos.x, prevPos.y);
+    const end = this.worldToScreen(targetX, targetY);
 
     this.ctx.beginPath();
     this.ctx.moveTo(start.x, start.y);

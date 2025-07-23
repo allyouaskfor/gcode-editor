@@ -31,6 +31,7 @@ export default function GcodeEditor() {
   const [visibleZHeights, setVisibleZHeights] = useState<Set<number>>(new Set());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
+  const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
 
   // File upload mutation
   const uploadMutation = useMutation({
@@ -311,6 +312,8 @@ export default function GcodeEditor() {
           totalLines={currentFile?.lineCount}
           isCollapsed={isToolbarCollapsed}
           onToggleCollapse={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
+          units={units}
+          onUnitsChange={setUnits}
         />
       </div>
 

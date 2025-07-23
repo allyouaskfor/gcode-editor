@@ -11,7 +11,8 @@ import {
   RotateCw,
   Scale,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Ruler
 } from "lucide-react";
 
 interface TransformationPanelProps {
@@ -33,6 +34,8 @@ interface TransformationPanelProps {
   totalLines?: number;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  units?: 'metric' | 'imperial';
+  onUnitsChange?: (units: 'metric' | 'imperial') => void;
 }
 
 export function TransformationPanel({
@@ -47,6 +50,8 @@ export function TransformationPanel({
   totalLines,
   isCollapsed = false,
   onToggleCollapse,
+  units = 'metric',
+  onUnitsChange,
 }: TransformationPanelProps) {
   const [transformation, setTransformation] = useState<Transformation>({
     translateX: 0,
@@ -82,6 +87,21 @@ export function TransformationPanel({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const convertUnits = (value: number, from: 'metric' | 'imperial', to: 'metric' | 'imperial'): number => {
+    if (from === to) return value;
+    if (from === 'metric' && to === 'imperial') return value / 25.4; // mm to inches
+    if (from === 'imperial' && to === 'metric') return value * 25.4; // inches to mm
+    return value;
+  };
+
+  const formatValue = (value: number): string => {
+    return value.toFixed(units === 'metric' ? 2 : 4);
+  };
+
+  const getUnitsLabel = (): string => {
+    return units === 'metric' ? 'mm' : 'in';
+  };
+
   const getZHeightColor = (index: number): string => {
     const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-amber-500', 'bg-red-500', 'bg-cyan-500'];
     return colors[index % colors.length];
@@ -99,6 +119,15 @@ export function TransformationPanel({
               {selectedCommandsCount} selected
             </Badge>
           )}
+          <div className="flex items-center space-x-1 ml-4">
+            <Ruler className="h-3 w-3 text-gray-500" />
+            <button
+              onClick={() => onUnitsChange?.(units === 'metric' ? 'imperial' : 'metric')}
+              className="text-xs font-mono bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
+            >
+              {units === 'metric' ? 'mm' : 'in'}
+            </button>
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -135,9 +164,9 @@ export function TransformationPanel({
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Selection Bounds</h4>
                   <div className="text-xs font-mono text-gray-600 space-y-1">
-                    <div>X: {selectionBounds.minX.toFixed(1)} - {selectionBounds.maxX.toFixed(1)} mm</div>
-                    <div>Y: {selectionBounds.minY.toFixed(1)} - {selectionBounds.maxY.toFixed(1)} mm</div>
-                    <div>Z: {selectionBounds.minZ.toFixed(1)} - {selectionBounds.maxZ.toFixed(1)} mm</div>
+                    <div>X: {formatValue(convertUnits(selectionBounds.minX, 'metric', units))} - {formatValue(convertUnits(selectionBounds.maxX, 'metric', units))} {getUnitsLabel()}</div>
+                    <div>Y: {formatValue(convertUnits(selectionBounds.minY, 'metric', units))} - {formatValue(convertUnits(selectionBounds.maxY, 'metric', units))} {getUnitsLabel()}</div>
+                    <div>Z: {formatValue(convertUnits(selectionBounds.minZ, 'metric', units))} - {formatValue(convertUnits(selectionBounds.maxZ, 'metric', units))} {getUnitsLabel()}</div>
                   </div>
                 </div>
               )}
@@ -152,7 +181,7 @@ export function TransformationPanel({
               <div className="grid grid-cols-3 gap-3">
                 {/* Translation */}
                 <div className="space-y-2">
-                  <Label className="text-xs text-gray-600">Translation (mm)</Label>
+                  <Label className="text-xs text-gray-600">Translation ({getUnitsLabel()})</Label>
                   <div className="space-y-1">
                     <Input
                       placeholder="X"
@@ -255,7 +284,7 @@ export function TransformationPanel({
                       className="mr-2"
                     />
                     <div className={`w-3 h-3 rounded mr-2 ${getZHeightColor(index)}`} />
-                    <span className="text-xs">{z.toFixed(1)}mm</span>
+                    <span className="text-xs">{formatValue(convertUnits(z, 'metric', units))}{getUnitsLabel()}</span>
                   </label>
                 ))}
               </div>
