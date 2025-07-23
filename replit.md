@@ -119,4 +119,10 @@ Preferred communication style: Simple, everyday language.
   - Units toggle now affects entire interface: coordinate display, selection bounds, Z-heights
   - Removed complex conversion logic in favor of parser-level unit interpretation
 
+- **Fixed Selection Coordinate Offset**: Resolved selection tool offset issue with user-uploaded G-Code files
+  - Fixed canvas coordinate system handling to properly account for device pixel ratio
+  - Ensured consistent coordinate conversion between mouse events and world coordinates
+  - Added getBounds() method to GcodeRenderer for debugging coordinate transformations
+  - Selection tool now works accurately for both sample files and user-uploaded G-Code files
+
 The application follows a modern full-stack architecture with clear separation between client and server code, while maintaining flexibility for both development and production deployment scenarios.
