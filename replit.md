@@ -107,4 +107,16 @@ Preferred communication style: Simple, everyday language.
   - All G-Code files now persist in PostgreSQL database
   - Maintained backward compatibility with IStorage interface
 
+- **Fixed Toolpath Rendering**: Resolved visualization issue where G-Code paths weren't displaying
+  - Fixed position tracking logic in GcodeRenderer to properly track previous and current positions
+  - Added support for G0 rapid movement commands in addition to G1 linear moves
+  - Improved coordinate handling for proper line rendering
+
+- **Enhanced Units System**: Implemented proper metric/imperial unit interpretation
+  - Updated GcodeParser to accept units parameter during parsing
+  - Imperial G-Code values now interpreted as inches and converted to internal mm storage
+  - Added automatic reparsing when units toggle changes
+  - Units toggle now affects entire interface: coordinate display, selection bounds, Z-heights
+  - Removed complex conversion logic in favor of parser-level unit interpretation
+
 The application follows a modern full-stack architecture with clear separation between client and server code, while maintaining flexibility for both development and production deployment scenarios.

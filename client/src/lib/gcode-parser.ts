@@ -1,7 +1,7 @@
 import { GcodeCommand } from "@shared/schema";
 
 export class GcodeParser {
-  static parse(content: string): GcodeCommand[] {
+  static parse(content: string, units: 'metric' | 'imperial' = 'metric'): GcodeCommand[] {
     const lines = content.split('\n');
     const commands: GcodeCommand[] = [];
 
@@ -20,7 +20,7 @@ export class GcodeParser {
         return;
       }
 
-      const command = this.parseLine(trimmedLine, index + 1);
+      const command = this.parseLine(trimmedLine, index + 1, units);
       if (command) {
         commands.push(command);
       }
@@ -29,7 +29,7 @@ export class GcodeParser {
     return commands;
   }
 
-  private static parseLine(line: string, lineNumber: number): GcodeCommand | null {
+  private static parseLine(line: string, lineNumber: number, units: 'metric' | 'imperial' = 'metric'): GcodeCommand | null {
     const commentIndex = line.indexOf(';');
     let codePart = line;
     let comment: string | undefined;
@@ -46,7 +46,7 @@ export class GcodeParser {
     if (!commandMatch) return null;
 
     const command = commandMatch[1].toUpperCase();
-    const params = this.extractParameters(codePart);
+    const params = this.extractParameters(codePart, units);
 
     return {
       line: lineNumber,
@@ -62,7 +62,7 @@ export class GcodeParser {
     };
   }
 
-  private static extractParameters(line: string): Record<string, number> {
+  private static extractParameters(line: string, units: 'metric' | 'imperial' = 'metric'): Record<string, number> {
     const params: Record<string, number> = {};
     
     // Match parameter patterns like X10.5, Y-5.2, Z0.1, etc.
@@ -70,8 +70,12 @@ export class GcodeParser {
     
     for (const match of paramMatches) {
       const param = match[1].toUpperCase();
-      const value = parseFloat(match[2]);
+      let value = parseFloat(match[2]);
       if (!isNaN(value)) {
+        // Convert inches to mm for internal consistency if units are imperial
+        if (units === 'imperial' && ['X', 'Y', 'Z'].includes(param)) {
+          value = value * 25.4; // Convert inches to mm
+        }
         params[param] = value;
       }
     }

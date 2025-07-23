@@ -38,16 +38,9 @@ export function VisualizationPanel({
   const [selectionEnd, setSelectionEnd] = useState<{ x: number; y: number } | null>(null);
   const [selectionTool, setSelectionTool] = useState<'pointer' | 'rectangle' | 'circle' | 'polygon'>('rectangle');
 
-  // Unit conversion utilities
-  const convertUnits = (value: number, from: 'metric' | 'imperial', to: 'metric' | 'imperial'): number => {
-    if (from === to) return value;
-    if (from === 'metric' && to === 'imperial') return value / 25.4; // mm to inches
-    if (from === 'imperial' && to === 'metric') return value * 25.4; // inches to mm
-    return value;
-  };
-
   const formatCoordinate = (value: number): string => {
-    const converted = convertUnits(value, 'metric', units);
+    // Convert from internal mm to display units
+    const converted = units === 'imperial' ? value / 25.4 : value;
     return converted.toFixed(units === 'metric' ? 1 : 3);
   };
 

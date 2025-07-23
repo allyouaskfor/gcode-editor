@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { GcodeCommand, GcodeFile, Transformation } from "@shared/schema";
 import { GcodeParser } from "@/lib/gcode-parser";
@@ -33,6 +33,18 @@ export default function GcodeEditor() {
   const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
   const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
 
+  // Reparse when units change
+  useEffect(() => {
+    if (currentFile?.content) {
+      const parsedCommands = GcodeParser.parse(currentFile.content, units);
+      setCommands(parsedCommands);
+      const heights = GcodeParser.getZHeights(parsedCommands);
+      setZHeights(heights);
+      setVisibleZHeights(new Set(heights));
+      setSelectedLines(new Set());
+    }
+  }, [units, currentFile?.content]);
+
   // File upload mutation
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -43,7 +55,7 @@ export default function GcodeEditor() {
     },
     onSuccess: (data: GcodeFile) => {
       setCurrentFile(data);
-      const parsedCommands = GcodeParser.parse(data.content);
+      const parsedCommands = GcodeParser.parse(data.content, units);
       setCommands(parsedCommands);
       
       const heights = GcodeParser.getZHeights(parsedCommands);

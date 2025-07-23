@@ -87,15 +87,10 @@ export function TransformationPanel({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const convertUnits = (value: number, from: 'metric' | 'imperial', to: 'metric' | 'imperial'): number => {
-    if (from === to) return value;
-    if (from === 'metric' && to === 'imperial') return value / 25.4; // mm to inches
-    if (from === 'imperial' && to === 'metric') return value * 25.4; // inches to mm
-    return value;
-  };
-
   const formatValue = (value: number): string => {
-    return value.toFixed(units === 'metric' ? 2 : 4);
+    // Convert from internal mm to display units
+    const converted = units === 'imperial' ? value / 25.4 : value;
+    return converted.toFixed(units === 'metric' ? 2 : 4);
   };
 
   const getUnitsLabel = (): string => {
@@ -164,9 +159,9 @@ export function TransformationPanel({
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Selection Bounds</h4>
                   <div className="text-xs font-mono text-gray-600 space-y-1">
-                    <div>X: {formatValue(convertUnits(selectionBounds.minX, 'metric', units))} - {formatValue(convertUnits(selectionBounds.maxX, 'metric', units))} {getUnitsLabel()}</div>
-                    <div>Y: {formatValue(convertUnits(selectionBounds.minY, 'metric', units))} - {formatValue(convertUnits(selectionBounds.maxY, 'metric', units))} {getUnitsLabel()}</div>
-                    <div>Z: {formatValue(convertUnits(selectionBounds.minZ, 'metric', units))} - {formatValue(convertUnits(selectionBounds.maxZ, 'metric', units))} {getUnitsLabel()}</div>
+                    <div>X: {formatValue(selectionBounds.minX)} - {formatValue(selectionBounds.maxX)} {getUnitsLabel()}</div>
+                    <div>Y: {formatValue(selectionBounds.minY)} - {formatValue(selectionBounds.maxY)} {getUnitsLabel()}</div>
+                    <div>Z: {formatValue(selectionBounds.minZ)} - {formatValue(selectionBounds.maxZ)} {getUnitsLabel()}</div>
                   </div>
                 </div>
               )}
@@ -284,7 +279,7 @@ export function TransformationPanel({
                       className="mr-2"
                     />
                     <div className={`w-3 h-3 rounded mr-2 ${getZHeightColor(index)}`} />
-                    <span className="text-xs">{formatValue(convertUnits(z, 'metric', units))}{getUnitsLabel()}</span>
+                    <span className="text-xs">{formatValue(z)}{getUnitsLabel()}</span>
                   </label>
                 ))}
               </div>
