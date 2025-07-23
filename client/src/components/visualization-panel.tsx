@@ -63,6 +63,7 @@ export function VisualizationPanel({
       }
 
       if (rendererRef.current) {
+        // Use logical dimensions (not scaled by devicePixelRatio) for coordinate calculations
         rendererRef.current.updateSettings({
           width: rect.width,
           height: rect.height,
@@ -124,6 +125,7 @@ export function VisualizationPanel({
     if (!canvas || !renderer) return;
 
     const rect = canvas.getBoundingClientRect();
+    // Account for canvas coordinate system (logical pixels, not device pixels)
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
     
@@ -143,8 +145,11 @@ export function VisualizationPanel({
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
+    // Use logical pixels for consistent coordinate system
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
+
+    console.log('Mouse down:', { clientX: e.clientX, clientY: e.clientY, rectLeft: rect.left, rectTop: rect.top, screenX, screenY });
 
     setIsSelecting(true);
     setSelectionStart({ x: screenX, y: screenY });
